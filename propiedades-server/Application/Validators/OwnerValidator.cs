@@ -12,24 +12,25 @@ namespace Application.Validators
     {
         public OwnerValidator()
         {
-            RuleFor(x => x.DNI)
-                .NotEmpty().WithMessage("Nombre es requerido")
-                .MinimumLength(2).WithMessage("Nombre demasiado corto")
-                .MaximumLength(50).WithMessage("Nombre demasiado largo");
-
             RuleFor(x => x.OwnerName)
-                .NotEmpty().WithMessage("Descripción es requerida")
-                .MinimumLength(5).WithMessage("Descripción demasiado corta")
-                .MaximumLength(500).WithMessage("Descripción demasiado larga");
+                .NotEmpty().WithMessage("Nombre del propietario es requerida")
+                .MinimumLength(5).WithMessage("Nombre del propietario demasiado corta")
+                .MaximumLength(500).WithMessage("Nombre del propietario demasiado larga");
+
+            RuleFor(x => x.Phone)
+                .NotEmpty().WithMessage("Telefono celular es requerido");
+
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage("Correo electronico es requerido");
 
             RuleFor(x => x.Address)
-                .NotEmpty().WithMessage("Precio es requerido");
+                .NotEmpty().WithMessage("Dirección es requerido");
 
             RuleFor(x => x.Photo)
-                .NotEmpty().WithMessage("Stock es requerido");
+                .NotEmpty().WithMessage("Fotografia es requerido");
 
             RuleFor(x => x.Birthday)
-                .NotEmpty().WithMessage("Stock es requerido");
+                .NotEmpty().WithMessage("Dia de cumpleaños es requerido");
         }
     }
 }
