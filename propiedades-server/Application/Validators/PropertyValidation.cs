@@ -16,37 +16,40 @@ namespace Application.Validators
         public PropertyValidator()
         {
             RuleFor(x => x.PropertyName)
-                .NotEmpty().WithMessage("Stock es requerido");
+                .NotEmpty().WithMessage("Nombre de la propiedad es requerido");
+
+            RuleFor(x => x.PropertyType)
+                .NotEmpty().WithMessage("Tipo de propiedad es requerido");
 
             RuleFor(x => x.Address)
-                .NotEmpty().WithMessage("Precio es requerido");
+                .NotEmpty().WithMessage("Dirrección es requerido");
 
             RuleFor(x => x.Price)
-                .NotEmpty().WithMessage("Stock es requerido");
+                .NotEmpty().WithMessage("Precio es requerido");
 
             RuleFor(x => x.Rooms)
-                .NotEmpty().WithMessage("Stock es requerido");
+                .NotEmpty().WithMessage("Habitaciones es requerido");
 
             RuleFor(x => x.Bathrooms)
-                .NotEmpty().WithMessage("Stock es requerido");
+                .NotEmpty().WithMessage("Baños es requerido");
 
             RuleFor(x => x.Area)
-                .NotEmpty().WithMessage("Stock es requerido");
+                .NotEmpty().WithMessage("Area es requerido");
 
             RuleFor(x => x.YearConstruction)
-                .NotEmpty().WithMessage("Stock es requerido");
+                .NotEmpty().WithMessage("Año de construcción es requerido");
 
             RuleFor(x => x.AnnualTax)
-                .NotEmpty().WithMessage("Stock es requerido");
+                .NotEmpty().WithMessage("Impuesto anual es requerido");
 
             RuleFor(x => x.MonthlyExpenses)
-                .NotEmpty().WithMessage("Stock es requerido");
+                .NotEmpty().WithMessage("Gastos mensuales es requerido");
 
             RuleFor(x => x.Description)
-                .NotEmpty().WithMessage("Stock es requerido");
+                .NotEmpty().WithMessage("Descripción es requerido");
 
             RuleFor(x => x.Features)
-                .NotEmpty().WithMessage("Stock es requerido");
+                .NotEmpty().WithMessage("Caracteristicas es requerido");
         }
     }
 }
