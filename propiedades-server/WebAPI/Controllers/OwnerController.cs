@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.Interfaces;
 using Domain.Models;
 using Infraestructure.Persistence.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -9,9 +10,9 @@ namespace WebAPI.Controllers;
 [Route("api/[controller]")]
 public class OwnerController : ControllerBase
 {
-    private readonly OwnerService _ownerService;
+    private readonly IOwner _ownerService;
 
-    public OwnerController(OwnerService ownerService) =>
+    public OwnerController(IOwner ownerService) =>
         _ownerService = ownerService;
 
     [HttpGet]
