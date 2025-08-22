@@ -27,7 +27,7 @@ namespace Infraestructure.Persistence.Services
             await _ownerCollection.Find(_ => true).ToListAsync();
 
         public async Task<Owner?> GetAsync(string id) =>
-            await _ownerCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+            await _ownerCollection.Find(x => x.IdOwner == id).FirstOrDefaultAsync();
 
         public async Task CreateAsync(OwnerDTO ownerDTO)
         {
@@ -52,10 +52,10 @@ namespace Infraestructure.Persistence.Services
                 .Set(p => p.Birthday, ownerDTO.Birthday)
                 .Set(p => p.Photo, ownerDTO.Photo);
 
-            await _ownerCollection.UpdateOneAsync(x => x.Id == id, updateOwner);
+            await _ownerCollection.UpdateOneAsync(x => x.IdOwner == id, updateOwner);
         }
 
         public async Task RemoveAsync(string id) =>
-            await _ownerCollection.DeleteOneAsync(x => x.Id == id);
+            await _ownerCollection.DeleteOneAsync(x => x.IdOwner == id);
     }
 }
