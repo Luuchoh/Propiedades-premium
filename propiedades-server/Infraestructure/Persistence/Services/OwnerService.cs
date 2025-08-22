@@ -33,11 +33,12 @@ namespace Infraestructure.Persistence.Services
         {
             var newOwner = new Owner
             {
-                DNI = ownerDTO.DNI,
-                Address = ownerDTO.Address,
                 OwnerName = ownerDTO.OwnerName,
+                Phone = ownerDTO.Phone,
+                Email = ownerDTO.Email,
+                Address = ownerDTO.Address,
+                Photo = ownerDTO.Photo,
                 Birthday = ownerDTO.Birthday,
-                Photo = ownerDTO.Photo
             };
 
             await _ownerCollection.InsertOneAsync(newOwner);
@@ -46,11 +47,12 @@ namespace Infraestructure.Persistence.Services
         public async Task UpdateAsync(string id, OwnerDTO ownerDTO)
         {
             var updateOwner = Builders<Owner>.Update
-                .Set(p => p.DNI, ownerDTO.DNI)
-                .Set(p => p.Address, ownerDTO.Address)
                 .Set(p => p.OwnerName, ownerDTO.OwnerName)
-                .Set(p => p.Birthday, ownerDTO.Birthday)
-                .Set(p => p.Photo, ownerDTO.Photo);
+                .Set(p => p.Phone, ownerDTO.Phone)
+                .Set(p => p.Email, ownerDTO.Email)
+                .Set(p => p.Address, ownerDTO.Address)
+                .Set(p => p.Photo, ownerDTO.Photo)
+                .Set(p => p.Birthday, ownerDTO.Birthday);
 
             await _ownerCollection.UpdateOneAsync(x => x.IdOwner == id, updateOwner);
         }

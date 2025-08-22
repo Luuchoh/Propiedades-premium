@@ -9,11 +9,12 @@ public class Owner
     [BsonRepresentation(BsonType.ObjectId)]
     public string? IdOwner { get; set; }
 
-    [BsonElement("IdOwner")]
-    public string? DNI { get; set; }
-
     [BsonElement("Name")]
     public string OwnerName { get; set; } = null!;
+
+    public string Phone { get; set; } = null!;
+
+    public string Email { get; set; } = null!;
 
     public string Address { get; set; } = null!; 
 
