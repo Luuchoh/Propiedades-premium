@@ -12,6 +12,8 @@ namespace Domain.Models
         [BsonElement("Name")]
         public string PropertyName { get; set; } = null!;
 
+        public string PropertyType { get; set; } = null!;
+
         public string Address { get; set; } = null!;
 
         public string Price { get; set; } = null!;

@@ -10,6 +10,8 @@ namespace Application.DTOs
     {
         public string PropertyName { get; set; } = null!;
 
+        public string PropertyType { get; set; } = null!;
+
         public string Address { get; set; } = null!;
 
         public string Price { get; set; } = null!;

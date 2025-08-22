@@ -34,6 +34,7 @@ namespace Infraestructure.Persistence.Services
             var newProperty = new Property
             {
                 PropertyName = PropertyDTO.PropertyName,
+                PropertyType = PropertyDTO.PropertyType,
                 Address = PropertyDTO.Address,
                 Price = PropertyDTO.Price,
                 Rooms = PropertyDTO.Rooms,
@@ -54,6 +55,7 @@ namespace Infraestructure.Persistence.Services
         {
             var updateProperty = Builders<Property>.Update
                 .Set(p => p.PropertyName, PropertyDTO.PropertyName)
+                .Set(p => p.PropertyType, PropertyDTO.PropertyType)
                 .Set(p => p.Address, PropertyDTO.Address)
                 .Set(p => p.Price, PropertyDTO.Price)
                 .Set(p => p.Rooms, PropertyDTO.Rooms)
