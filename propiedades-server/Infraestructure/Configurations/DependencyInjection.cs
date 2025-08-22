@@ -33,6 +33,7 @@ public static class DependencyInjection
     private static void RegisterDomainServices(IServiceCollection services)
     {
         services.AddScoped<IOwner, OwnerService>();
+        services.AddScoped<IProperty, PropertyService>();
     }
 
     /// <summary>
@@ -40,8 +41,9 @@ public static class DependencyInjection
     /// </summary>
     private static void RegisterValidators(IServiceCollection services)
     {
-        // Opción 1: Registro manual (actual)
+        // Registro manual 
         services.AddScoped<IValidator<OwnerDTO>, OwnerValidator>();
+        services.AddScoped<IValidator<PropertyDTO>, PropertyValidator>();
 
     }
 }
