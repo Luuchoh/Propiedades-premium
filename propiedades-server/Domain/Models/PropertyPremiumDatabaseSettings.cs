@@ -7,5 +7,7 @@
         public string DatabaseName { get; set; } = null!;
 
         public string OwnerCollectionName { get; set; } = null!;
+
+        public string PropertyCollectionName { get; set; } = null!;
     }
 }
