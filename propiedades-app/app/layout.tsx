@@ -12,7 +12,6 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "PropiedadesPlus - Encuentra tu hogar ideal",
   description: "Plataforma de listado de propiedades en venta con filtros avanzados y información detallada",
-  generator: "v0.app",
 }
 
 export default function RootLayout({

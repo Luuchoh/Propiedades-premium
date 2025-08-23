@@ -143,7 +143,7 @@ export default function PropertiesPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Home className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-card-foreground">PropiedadesPlus</h1>
+              <h1 className="text-2xl font-bold text-card-foreground">PropiedadesPremium</h1>
             </div>
             <Link href="/dashboard">
               <Button variant="outline" className="gap-2 bg-transparent">
