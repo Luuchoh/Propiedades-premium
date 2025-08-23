@@ -34,6 +34,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IOwner, OwnerService>();
         services.AddScoped<IProperty, PropertyService>();
+        services.AddScoped<IPropertyImage, PropertyImageService>();
     }
 
     /// <summary>
