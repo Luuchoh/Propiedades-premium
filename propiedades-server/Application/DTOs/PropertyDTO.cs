@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.DTOs
+﻿namespace Application.DTOs
 {
     public class PropertyDTO
     {
+        public string? IdProperty { get; set; } = null!;
+
         public string PropertyName { get; set; } = null!;
 
         public string PropertyType { get; set; } = null!;
@@ -32,6 +28,6 @@ namespace Application.DTOs
 
         public string Features { get; set; } = null!;
 
-        public string Photo { get; set; } = null!;
+        public PropertyImageDTO? Image { get; set; }
     }
 }
