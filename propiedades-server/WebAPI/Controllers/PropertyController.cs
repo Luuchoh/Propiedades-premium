@@ -1,7 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Domain.Models;
-using Infraestructure.Persistence.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers
@@ -15,14 +14,14 @@ namespace WebAPI.Controllers
         public PropertyController(IProperty propertyService) =>
             _propertyService = propertyService;
 
-        [HttpGet]
-        public async Task<List<Property>> Get() =>
-            await _propertyService.GetAsync();
+        [HttpGet("GetAllProperties")]
+        public async Task<List<PropertyDTO>> Get() =>
+            await _propertyService.GetAllAsync();
 
-        [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<Property>> Get(string id)
+        [HttpGet("GetOnePropertyByID")]
+        public async Task<ActionResult<PropertyDTO>> Get([FromBody] GeneralIdDTO generalIdDTO)
         {
-            var book = await _propertyService.GetAsync(id);
+            var book = await _propertyService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
 
             if (book is null)
             {
@@ -32,7 +31,7 @@ namespace WebAPI.Controllers
             return book;
         }
 
-        [HttpPost]
+        [HttpPost("CreateProperty")]
         public async Task<IActionResult> Create([FromBody] PropertyDTO propertyDTO)
         {
             await _propertyService.CreateAsync(propertyDTO);
@@ -40,32 +39,32 @@ namespace WebAPI.Controllers
             return CreatedAtAction(nameof(Get), propertyDTO);
         }
 
-        [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, [FromBody] PropertyDTO propertyDTO)
+        [HttpPut("UpdateProperty")]
+        public async Task<IActionResult> Update([FromBody] PropertyDTO propertyDTO)
         {
-            var owner = await _propertyService.GetAsync(id);
+            var owner = await _propertyService.GetOneByIdAsync(propertyDTO.IdProperty!);
 
             if (owner is null)
             {
                 return NotFound();
             }
 
-            await _propertyService.UpdateAsync(id, propertyDTO);
+            await _propertyService.UpdateAsync(propertyDTO);
 
             return NoContent();
         }
 
-        [HttpDelete("{id:length(24)}")]
-        public async Task<IActionResult> Delete(string id)
+        [HttpDelete("DeleteProperty")]
+        public async Task<IActionResult> Delete([FromBody] GeneralIdDTO generalIdDTO)
         {
-            var book = await _propertyService.GetAsync(id);
+            var book = await _propertyService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
 
             if (book is null)
             {
                 return NotFound();
             }
 
-            await _propertyService.RemoveAsync(id);
+            await _propertyService.RemoveAsync(generalIdDTO.MongoGeneralId);
 
             return NoContent();
         }

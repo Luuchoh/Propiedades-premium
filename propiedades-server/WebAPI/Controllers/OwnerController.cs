@@ -15,14 +15,14 @@ public class OwnerController : ControllerBase
     public OwnerController(IOwner ownerService) =>
         _ownerService = ownerService;
 
-    [HttpGet]
+    [HttpGet("GetAllOwners")]
     public async Task<List<Owner>> Get() =>
-        await _ownerService.GetAsync();
+        await _ownerService.GetAllAsync();
 
-    [HttpGet("{id:length(24)}")]
-    public async Task<ActionResult<Owner>> Get(string id)
+    [HttpGet("GetOneOwnerById")]
+    public async Task<ActionResult<Owner>> Get(GeneralIdDTO generalIdDTO)
     {
-        var book = await _ownerService.GetAsync(id);
+        var book = await _ownerService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
 
         if (book is null)
         {
@@ -32,7 +32,7 @@ public class OwnerController : ControllerBase
         return book;
     }
 
-    [HttpPost]
+    [HttpPost("CreateOwner")]
     public async Task<IActionResult> Create([FromBody] OwnerDTO ownerDTO)
     {
         await _ownerService.CreateAsync(ownerDTO);
@@ -40,32 +40,32 @@ public class OwnerController : ControllerBase
         return CreatedAtAction(nameof(Get), ownerDTO);
     }
 
-    [HttpPut("{id:length(24)}")]
-    public async Task<IActionResult> Update(string id, [FromBody] OwnerDTO ownerDTO)
+    [HttpPut("UpdateOwner")]
+    public async Task<IActionResult> Update([FromBody] OwnerDTO ownerDTO)
     {
-        var owner = await _ownerService.GetAsync(id);
+        var owner = await _ownerService.GetOneByIdAsync(ownerDTO.IdOwner!);
 
         if (owner is null)
         {
             return NotFound();
         }
 
-        await _ownerService.UpdateAsync(id, ownerDTO);
+        await _ownerService.UpdateAsync(ownerDTO);
 
         return NoContent();
     }
 
-    [HttpDelete("{id:length(24)}")]
-    public async Task<IActionResult> Delete(string id)
+    [HttpDelete("DeleteOwner")]
+    public async Task<IActionResult> Delete(GeneralIdDTO generalIdDTO)
     {
-        var book = await _ownerService.GetAsync(id);
+        var book = await _ownerService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
 
         if (book is null)
         {
             return NotFound();
         }
 
-        await _ownerService.RemoveAsync(id);
+        await _ownerService.RemoveAsync(generalIdDTO.MongoGeneralId);
 
         return NoContent();
     }
