@@ -5,15 +5,15 @@ namespace Application.Interfaces
 {
     public interface IOwner
     {
-        Task<List<Owner>> GetAsync();
+        Task<List<Owner>> GetAllAsync();
      
-        Task<Owner?> GetAsync(string id);
+        Task<Owner?> GetOneByIdAsync(string generalId);
         
         Task CreateAsync(OwnerDTO ownerDTO);
         
-        Task UpdateAsync(string id, OwnerDTO ownerDTO);
+        Task UpdateAsync(OwnerDTO ownerDTO);
         
-        Task RemoveAsync(string id);
+        Task RemoveAsync(string generalId);
 
     }
 }

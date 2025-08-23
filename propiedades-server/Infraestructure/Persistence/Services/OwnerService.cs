@@ -23,11 +23,11 @@ namespace Infraestructure.Persistence.Services
                 PropertyPremiumDatabaseSettings.Value.OwnerCollectionName);
         }
 
-        public async Task<List<Owner>> GetAsync() =>
+        public async Task<List<Owner>> GetAllAsync() =>
             await _ownerCollection.Find(_ => true).ToListAsync();
 
-        public async Task<Owner?> GetAsync(string id) =>
-            await _ownerCollection.Find(x => x.IdOwner == id).FirstOrDefaultAsync();
+        public async Task<Owner?> GetOneByIdAsync(string generalId) =>
+            await _ownerCollection.Find(x => x.IdOwner == generalId).FirstOrDefaultAsync();
 
         public async Task CreateAsync(OwnerDTO ownerDTO)
         {
@@ -44,7 +44,7 @@ namespace Infraestructure.Persistence.Services
             await _ownerCollection.InsertOneAsync(newOwner);
         }
 
-        public async Task UpdateAsync(string id, OwnerDTO ownerDTO)
+        public async Task UpdateAsync(OwnerDTO ownerDTO)
         {
             var updateOwner = Builders<Owner>.Update
                 .Set(p => p.OwnerName, ownerDTO.OwnerName)
@@ -54,10 +54,10 @@ namespace Infraestructure.Persistence.Services
                 .Set(p => p.Photo, ownerDTO.Photo)
                 .Set(p => p.Birthday, ownerDTO.Birthday);
 
-            await _ownerCollection.UpdateOneAsync(x => x.IdOwner == id, updateOwner);
+            await _ownerCollection.UpdateOneAsync(x => x.IdOwner == ownerDTO.IdOwner, updateOwner);
         }
 
-        public async Task RemoveAsync(string id) =>
-            await _ownerCollection.DeleteOneAsync(x => x.IdOwner == id);
+        public async Task RemoveAsync(string generalId) =>
+            await _ownerCollection.DeleteOneAsync(x => x.IdOwner == generalId);
     }
 }
