@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using Domain.Models;
 using Microsoft.Extensions.Options;
@@ -9,9 +9,10 @@ namespace Infraestructure.Persistence.Services
     public class PropertyService: IProperty
     {
         private readonly IMongoCollection<Property> _propertyCollection;
+        private readonly IPropertyImage _PropertyimageService;
 
         public PropertyService(
-            IOptions<PropertyPremiumDatabaseSettings> PropertyPremiumDatabaseSettings)
+            IOptions<PropertyPremiumDatabaseSettings> PropertyPremiumDatabaseSettings, IPropertyImage propertyImage)
         {
             var mongoClient = new MongoClient(
                 PropertyPremiumDatabaseSettings.Value.ConnectionString);
@@ -21,17 +22,62 @@ namespace Infraestructure.Persistence.Services
 
             _propertyCollection = mongoDatabase.GetCollection<Property>(
                 PropertyPremiumDatabaseSettings.Value.PropertyCollectionName);
+
+            _PropertyimageService = propertyImage;
+
         }
 
-        public async Task<List<Property>> GetAsync() =>
-            await _propertyCollection.Find(_ => true).ToListAsync();
-
-        public async Task<Property?> GetAsync(string id) =>
-            await _propertyCollection.Find(x => x.IdProperty == id).FirstOrDefaultAsync();
-
-        public async Task CreateAsync(PropertyDTO PropertyDTO)
+        public async Task<List<PropertyDTO>> GetAllAsync()
         {
-            var newProperty = new Property
+            List<Property> properties = await _propertyCollection.Find(_ => true).ToListAsync();
+            List<PropertyDTO> result = [];
+
+            foreach (Property property in properties)
+            {
+                PropertyImage propertyImage = await _PropertyimageService.GetPropertyImageByIdAsync(property.IdProperty);
+                result.Add(MapToPropertyDTO(property, propertyImage));
+            }
+
+            return result;
+        }
+
+        public async Task<PropertyDTO> GetOneByIdAsync(string generalId)
+        {
+            Property property = await _propertyCollection.Find(x => x.IdProperty == generalId).FirstOrDefaultAsync();
+            
+            if (property == null) return null;
+
+            PropertyImage propertyImage = await _PropertyimageService.GetPropertyImageByIdAsync(property.IdProperty);
+            return MapToPropertyDTO(property, propertyImage);
+        }
+
+        private PropertyDTO MapToPropertyDTO(Property property, PropertyImage propertyImage) => new PropertyDTO
+        {
+            IdProperty = property.IdProperty,
+            PropertyName = property.PropertyName,
+            PropertyType = property.PropertyType,
+            Address = property.Address,
+            Price = property.Price,
+            Rooms = property.Rooms,
+            Bathrooms = property.Bathrooms,
+            Area = property.Area,
+            YearConstruction = property.YearConstruction,
+            AnnualTax = property.AnnualTax,
+            MonthlyExpenses = property.MonthlyExpenses,
+            Description = property.Description,
+            Features = property.Features,
+            Image = new PropertyImageDTO
+            {
+                IdPropertyImage = propertyImage.IdPropertyImage,
+                IdProperty = propertyImage.IdProperty,
+                File = propertyImage.File,
+                Enable = propertyImage.Enable
+            }
+        };
+
+        public async Task<PropertyDTO> CreateAsync(PropertyDTO PropertyDTO)
+        {
+            Property newProperty = new ()
             {
                 PropertyName = PropertyDTO.PropertyName,
                 PropertyType = PropertyDTO.PropertyType,
@@ -48,10 +94,43 @@ namespace Infraestructure.Persistence.Services
             };
 
             await _propertyCollection.InsertOneAsync(newProperty);
-            //TODO logica para agregar la imagen a otra collection
+
+            PropertyImageDTO newPropertyImage = new ()
+            {
+                IdProperty = newProperty.IdProperty,
+                File = PropertyDTO?.Image?.File,
+                Enable = PropertyDTO!.Image!.Enable || true,
+            };
+
+            await _PropertyimageService.CreateAsync(newPropertyImage);
+
+            PropertyDTO newPropertyResponse = new ()
+            {
+                PropertyName = newProperty.PropertyName,
+                PropertyType = newProperty.PropertyType,
+                Address = newProperty.Address,
+                Price = newProperty.Price,
+                Rooms = newProperty.Rooms,
+                Bathrooms = newProperty.Bathrooms,
+                Area = newProperty.Area,
+                YearConstruction = newProperty.YearConstruction,
+                AnnualTax = newProperty.AnnualTax,
+                MonthlyExpenses = newProperty.MonthlyExpenses,
+                Description = newProperty.Description,
+                Features = newProperty.Features,
+
+                Image = new PropertyImageDTO
+                {
+                    IdProperty = newPropertyImage.IdProperty,
+                    File = newPropertyImage.File,
+                    Enable = newPropertyImage.Enable
+                }
+            };
+
+            return newPropertyResponse;
         }
 
-        public async Task UpdateAsync(string id, PropertyDTO PropertyDTO)
+        public async Task UpdateAsync(PropertyDTO PropertyDTO)
         {
             var updateProperty = Builders<Property>.Update
                 .Set(p => p.PropertyName, PropertyDTO.PropertyName)
@@ -67,11 +146,20 @@ namespace Infraestructure.Persistence.Services
                 .Set(p => p.Description, PropertyDTO.Description)
                 .Set(p => p.Features, PropertyDTO.Features);
 
-            await _propertyCollection.UpdateOneAsync(x => x.IdProperty == id, updateProperty);
-            //TODO logica para agregar la imagen a otra collection
+            await _propertyCollection.UpdateOneAsync(x => x.IdProperty == PropertyDTO.IdProperty, updateProperty);
+
+            PropertyImageDTO updatePropertyImage = new ()
+            {
+                IdPropertyImage = PropertyDTO?.Image?.IdPropertyImage,
+                IdProperty = PropertyDTO?.Image?.IdProperty,
+                File = PropertyDTO?.Image?.File,
+                Enable = PropertyDTO?.Image?.Enable ?? true
+            };
+
+            await _PropertyimageService.UpdateAsync(updatePropertyImage);
         }
 
-        public async Task RemoveAsync(string id) =>
-            await _propertyCollection.DeleteOneAsync(x => x.IdProperty == id);
+        public async Task RemoveAsync(string generalId) =>
+            await _propertyCollection.DeleteOneAsync(x => x.IdProperty == generalId);
     }
 }

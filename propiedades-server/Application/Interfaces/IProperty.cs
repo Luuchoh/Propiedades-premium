@@ -5,14 +5,14 @@ namespace Application.Interfaces
 {
     public interface IProperty
     {
-        Task<List<Property>> GetAsync();
+        Task<List<PropertyDTO>> GetAllAsync();
 
-        Task<Property?> GetAsync(string id);
+        Task<PropertyDTO> GetOneByIdAsync(string generalId);
 
-        Task CreateAsync(PropertyDTO PropertyDTO);
+        Task<PropertyDTO> CreateAsync(PropertyDTO PropertyDTO);
 
-        Task UpdateAsync(string id, PropertyDTO PropertyDTO);
+        Task UpdateAsync(PropertyDTO PropertyDTO);
 
-        Task RemoveAsync(string id);
+        Task RemoveAsync(string generalId);
     }
 }
