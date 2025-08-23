@@ -34,6 +34,5 @@ namespace Domain.Models
 
         public string Features { get; set; } = null!;
 
-        public string Photo { get; set; } = null!;
     }
 }
