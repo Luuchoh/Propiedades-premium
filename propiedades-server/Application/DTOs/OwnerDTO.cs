@@ -2,6 +2,8 @@
 {
     public class OwnerDTO
     {
+        public string? IdOwner { get; set; } = null!;
+
         public string OwnerName { get; set; } = null!;
 
         public string Phone { get; set; } = null!;
