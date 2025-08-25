@@ -29,30 +29,49 @@ namespace Infraestructure.Persistence.Services
         public async Task<Owner?> GetOneByIdAsync(string generalId) =>
             await _ownerCollection.Find(x => x.IdOwner == generalId).FirstOrDefaultAsync();
 
-        public async Task CreateAsync(OwnerDTO ownerDTO)
+        public async Task<Owner?> GetOneByDNIAsync(string dni)
         {
+            return await _ownerCollection.Find(x => x.DNI == dni).FirstOrDefaultAsync();
+        }
+
+        public async Task<Owner> CreateAsync(OwnerDTO ownerDTO)
+        {
+            var existingOwner = await GetOneByDNIAsync(ownerDTO.DNI);
+            
+            if (existingOwner != null)
+            {
+                throw new Exception("El DNI ya está registrado.");
+            }
+
             var newOwner = new Owner
             {
                 OwnerName = ownerDTO.OwnerName,
+                DNI = ownerDTO.DNI,
                 Phone = ownerDTO.Phone,
                 Email = ownerDTO.Email,
                 Address = ownerDTO.Address,
                 Photo = ownerDTO.Photo,
                 Birthday = ownerDTO.Birthday,
+                CreatedAt = DateTime.Now,
             };
 
             await _ownerCollection.InsertOneAsync(newOwner);
+
+            return newOwner;
         }
 
         public async Task UpdateAsync(OwnerDTO ownerDTO)
         {
             var updateOwner = Builders<Owner>.Update
                 .Set(p => p.OwnerName, ownerDTO.OwnerName)
+                .Set(p => p.DNI, ownerDTO.OwnerName)
                 .Set(p => p.Phone, ownerDTO.Phone)
                 .Set(p => p.Email, ownerDTO.Email)
                 .Set(p => p.Address, ownerDTO.Address)
                 .Set(p => p.Photo, ownerDTO.Photo)
-                .Set(p => p.Birthday, ownerDTO.Birthday);
+                .Set(p => p.Birthday, ownerDTO.Birthday)
+                .Set(p => p.CreatedAt, ownerDTO.CreatedAt)
+                .Set(p => p.UpdatedAt, DateTime.Now);
 
             await _ownerCollection.UpdateOneAsync(x => x.IdOwner == ownerDTO.IdOwner, updateOwner);
         }

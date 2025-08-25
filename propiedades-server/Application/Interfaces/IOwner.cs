@@ -8,8 +8,10 @@ namespace Application.Interfaces
         Task<List<Owner>> GetAllAsync();
      
         Task<Owner?> GetOneByIdAsync(string generalId);
-        
-        Task CreateAsync(OwnerDTO ownerDTO);
+
+        Task<Owner?> GetOneByDNIAsync(string dni);
+
+        Task<Owner> CreateAsync(OwnerDTO ownerDTO);
         
         Task UpdateAsync(OwnerDTO ownerDTO);
         
