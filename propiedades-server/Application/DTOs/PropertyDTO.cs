@@ -2,7 +2,9 @@
 {
     public class PropertyDTO
     {
-        public string? IdProperty { get; set; } = null!;
+        public string? IdProperty { get; set; }
+
+        public string? IdOwner { get; set; }
 
         public string PropertyName { get; set; } = null!;
 
@@ -10,24 +12,30 @@
 
         public string Address { get; set; } = null!;
 
-        public string Price { get; set; } = null!;
+        public int Price { get; set; }
 
-        public string Rooms { get; set; } = null!;
+        public int Rooms { get; set; }
 
-        public string Bathrooms { get; set; } = null!;
+        public int Bathrooms { get; set; }
 
-        public string Area { get; set; } = null!;
+        public int Area { get; set; }
 
-        public string YearConstruction { get; set; } = null!;
+        public int YearConstruction { get; set; }
 
-        public string AnnualTax { get; set; } = null!;
+        public int AnnualTax { get; set; }
 
-        public string MonthlyExpenses { get; set; } = null!;
+        public int MonthlyExpenses { get; set; }
 
         public string Description { get; set; } = null!;
 
-        public string Features { get; set; } = null!;
+        public List<String> Features { get; set; } = new();
 
         public PropertyImageDTO? Image { get; set; }
-    }
+
+        public string Status { get; set; } = null!;
+
+        public DateTime? CreatedAt { get; set; }
+
+        public DateTime? UpdatedAt { get; set; }
+}
 }
