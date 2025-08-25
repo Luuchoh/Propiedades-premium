@@ -4,6 +4,8 @@
     {
         public string? IdOwner { get; set; } = null!;
 
+        public string DNI { get; set; } = null!;
+
         public string OwnerName { get; set; } = null!;
 
         public string Phone { get; set; } = null!;
@@ -15,5 +17,9 @@
         public string Photo { get; set; } = null!;
 
         public string Birthday { get; set; } = null!;
+
+        public DateTime? CreatedAt { get; set; }
+
+        public DateTime? UpdatedAt { get; set; }
     }
 }
