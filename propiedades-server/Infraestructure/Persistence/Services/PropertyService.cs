@@ -54,6 +54,7 @@ namespace Infraestructure.Persistence.Services
         private PropertyDTO MapToPropertyDTO(Property property, PropertyImage propertyImage) => new PropertyDTO
         {
             IdProperty = property.IdProperty,
+            IdOwner = property.IdOwner,
             PropertyName = property.PropertyName,
             PropertyType = property.PropertyType,
             Address = property.Address,
@@ -72,13 +73,17 @@ namespace Infraestructure.Persistence.Services
                 IdProperty = propertyImage.IdProperty,
                 File = propertyImage.File,
                 Enable = propertyImage.Enable
-            }
+            },
+            Status = property.Status,
+            CreatedAt = property.CreatedAt,
+            UpdatedAt = property.UpdatedAt,
         };
 
         public async Task<PropertyDTO> CreateAsync(PropertyDTO PropertyDTO)
         {
             Property newProperty = new ()
             {
+                IdOwner = PropertyDTO.IdOwner,
                 PropertyName = PropertyDTO.PropertyName,
                 PropertyType = PropertyDTO.PropertyType,
                 Address = PropertyDTO.Address,
@@ -91,48 +96,28 @@ namespace Infraestructure.Persistence.Services
                 MonthlyExpenses = PropertyDTO.MonthlyExpenses,
                 Description = PropertyDTO.Description,
                 Features = PropertyDTO.Features,
+                Status = PropertyDTO.Status,
+                CreatedAt = DateTime.Now,
             };
 
             await _propertyCollection.InsertOneAsync(newProperty);
 
-            PropertyImageDTO newPropertyImage = new ()
+            PropertyImageDTO newPropertyImageDTO = new ()
             {
                 IdProperty = newProperty.IdProperty,
                 File = PropertyDTO?.Image?.File,
                 Enable = PropertyDTO!.Image!.Enable || true,
             };
 
-            await _PropertyimageService.CreateAsync(newPropertyImage);
+            PropertyImage newPropertyImage = await _PropertyimageService.CreateAsync(newPropertyImageDTO);
 
-            PropertyDTO newPropertyResponse = new ()
-            {
-                PropertyName = newProperty.PropertyName,
-                PropertyType = newProperty.PropertyType,
-                Address = newProperty.Address,
-                Price = newProperty.Price,
-                Rooms = newProperty.Rooms,
-                Bathrooms = newProperty.Bathrooms,
-                Area = newProperty.Area,
-                YearConstruction = newProperty.YearConstruction,
-                AnnualTax = newProperty.AnnualTax,
-                MonthlyExpenses = newProperty.MonthlyExpenses,
-                Description = newProperty.Description,
-                Features = newProperty.Features,
-
-                Image = new PropertyImageDTO
-                {
-                    IdProperty = newPropertyImage.IdProperty,
-                    File = newPropertyImage.File,
-                    Enable = newPropertyImage.Enable
-                }
-            };
-
-            return newPropertyResponse;
+            return MapToPropertyDTO(newProperty, newPropertyImage); ;
         }
 
         public async Task UpdateAsync(PropertyDTO PropertyDTO)
         {
             var updateProperty = Builders<Property>.Update
+                .Set(p => p.IdOwner, PropertyDTO.IdOwner)
                 .Set(p => p.PropertyName, PropertyDTO.PropertyName)
                 .Set(p => p.PropertyType, PropertyDTO.PropertyType)
                 .Set(p => p.Address, PropertyDTO.Address)
@@ -144,7 +129,10 @@ namespace Infraestructure.Persistence.Services
                 .Set(p => p.AnnualTax, PropertyDTO.AnnualTax)
                 .Set(p => p.MonthlyExpenses, PropertyDTO.MonthlyExpenses)
                 .Set(p => p.Description, PropertyDTO.Description)
-                .Set(p => p.Features, PropertyDTO.Features);
+                .Set(p => p.Features, PropertyDTO.Features)
+                .Set(p => p.Status, PropertyDTO.Status)
+                .Set(p => p.CreatedAt, PropertyDTO.CreatedAt)
+                .Set(p => p.UpdatedAt, DateTime.Now);
 
             await _propertyCollection.UpdateOneAsync(x => x.IdProperty == PropertyDTO.IdProperty, updateProperty);
 
