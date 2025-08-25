@@ -8,31 +8,41 @@ namespace Domain.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string? IdProperty { get; set; }
+        
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? IdOwner { get; set; }
 
         [BsonElement("Name")]
         public string PropertyName { get; set; } = null!;
 
+        [BsonElement("Type")]
         public string PropertyType { get; set; } = null!;
 
         public string Address { get; set; } = null!;
 
-        public string Price { get; set; } = null!;
+        public int Price { get; set; }
 
-        public string Rooms { get; set; } = null!;
+        public int Rooms { get; set; }
 
-        public string Bathrooms { get; set; } = null!;
+        public int Bathrooms { get; set; }
 
-        public string Area { get; set; } = null!;
+        public int Area { get; set; } 
 
-        public string YearConstruction { get; set; } = null!;
+        public int YearConstruction { get; set; }
 
-        public string AnnualTax { get; set; } = null!;
+        public int AnnualTax { get; set; }
 
-        public string MonthlyExpenses{ get; set; } = null!;
+        public int MonthlyExpenses{ get; set; }
 
         public string Description { get; set; } = null!;
 
-        public string Features { get; set; } = null!;
+        public List<String> Features { get; set; } = new();
+
+        public string Status { get; set; } = null!;
+
+        public DateTime? CreatedAt { get; set; }
+
+        public DateTime? UpdatedAt { get; set; }
 
     }
 }
