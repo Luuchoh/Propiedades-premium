@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -23,88 +23,45 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
+import { useAppStore } from "@/store/useAppStore"
+import type { AppState } from "@/store/useAppStore"
+import { formatPrice, getInitials } from "@/lib/utils"
 
-// Mock data - En producción esto vendría de tu API REST
-const mockProperties = [
-  {
-    id: 1,
-    name: "Casa Moderna en Las Condes",
-    address: "Av. Las Condes 1234, Las Condes, Santiago",
-    price: 450000000,
-    bedrooms: 4,
-    bathrooms: 3,
-    area: 180,
-    images: ["/modern-house-exterior.png", "/luxury-penthouse-interior.png", "/house-with-pool.png"],
-    type: "Casa",
-    description:
-      "Hermosa casa moderna ubicada en el exclusivo sector de Las Condes. Cuenta con amplios espacios, acabados de primera calidad y una excelente ubicación cerca de centros comerciales y colegios. La propiedad incluye jardín privado, estacionamiento para 2 vehículos y sistema de seguridad integrado.",
-    features: [
-      "Estacionamiento para 2 autos",
-      "Jardín privado",
-      "Sistema de seguridad",
-      "Calefacción central",
-      "Cocina equipada",
-      "Terraza",
-      "Bodega",
-      "Portón automático",
-    ],
-    yearBuilt: 2020,
-    propertyTax: 2500000,
-    maintenanceFee: 150000,
-    owner: {
-      name: "María González",
-      phone: "+56 9 1234 5678",
-      email: "maria.gonzalez@email.com",
-      avatar: "/professional-woman-avatar.png",
-      yearsExperience: 8,
-      propertiesSold: 45,
-    },
-  },
-  {
-    id: 2,
-    name: "Departamento Vista al Mar",
-    address: "Av. del Mar 567, Viña del Mar",
-    price: 280000000,
-    bedrooms: 2,
-    bathrooms: 2,
-    area: 95,
-    images: ["/ocean-view-apartment.png", "/modern-house-exterior.png", "/luxury-penthouse-interior.png"],
-    type: "Departamento",
-    description:
-      "Espectacular departamento con vista panorámica al mar en Viña del Mar. Ubicado en un edificio moderno con amenities completos. Ideal para quienes buscan tranquilidad y una vista inmejorable del océano Pacífico.",
-    features: [
-      "Vista al mar",
-      "Piscina del edificio",
-      "Gimnasio",
-      "Sala de eventos",
-      "Estacionamiento",
-      "Bodega",
-      "Portería 24/7",
-      "Ascensor",
-    ],
-    yearBuilt: 2018,
-    propertyTax: 1800000,
-    maintenanceFee: 180000,
-    owner: {
-      name: "Carlos Rodríguez",
-      phone: "+56 9 8765 4321",
-      email: "carlos.rodriguez@email.com",
-      avatar: "/professional-man-avatar.png",
-      yearsExperience: 12,
-      propertiesSold: 78,
-    },
-  },
-]
+// Data se obtiene desde el store (fetchPropertyById)
 
 export default function PropertyDetailPage() {
   const params = useParams()
-  const propertyId = Number.parseInt(params.id as string)
+  const propertyId = params.id as string
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isFavorite, setIsFavorite] = useState(false)
 
-  const property = mockProperties.find((p) => p.id === propertyId)
+  const { selectedProperty: property, selectedOwner: owner, fetchOwnerById, loading, error } = useAppStore((s: AppState) => ({
+    selectedProperty: s.selectedProperty,
+    selectedOwner: s.selectedOwner,
+    fetchOwnerById: s.fetchOwnerById,
+    loading: s.loading,
+    error: s.error,
+  }))
 
-  if (!property) {
+  // Cargar el propietario cuando la propiedad esté disponible
+  useEffect(() => {
+    if (property?.idOwner) {
+      fetchOwnerById(property.idOwner)
+    }
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Home className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Cargando propiedad...</h2>
+        </div>
+      </div>
+    )
+  }
+
+  if (!property || property.idProperty !== propertyId) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -119,21 +76,8 @@ export default function PropertyDetailPage() {
     )
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-      minimumFractionDigits: 0,
-    }).format(price)
-  }
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-  }
+  
+  const images = property.image
 
   return (
     <div className="min-h-screen bg-background">
@@ -173,16 +117,16 @@ export default function PropertyDetailPage() {
             <Card className="overflow-hidden">
               <div className="aspect-video relative">
                 <img
-                  src={property.images[currentImageIndex] || "/placeholder.svg"}
-                  alt={`${property.name} - Imagen ${currentImageIndex + 1}`}
+                  src={images?.file || "/placeholder.svg"}
+                  alt={`${property.propertyName} - Imagen ${currentImageIndex + 1}`}
                   className="w-full h-full object-cover"
                 />
-                <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">{property.type}</Badge>
+                <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">{property.propertyType}</Badge>
               </div>
-              {property.images.length > 1 && (
+              {/* {images?.length > 1 && (
                 <div className="p-4">
                   <div className="flex gap-2 overflow-x-auto">
-                    {property.images.map((image, index) => (
+                    {images?.map((image: string, index: number) => (
                       <button
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
@@ -191,7 +135,7 @@ export default function PropertyDetailPage() {
                         }`}
                       >
                         <img
-                          src={image || "/placeholder.svg"}
+                          src={image.file || "/placeholder.svg"}
                           alt={`Vista ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
@@ -199,7 +143,7 @@ export default function PropertyDetailPage() {
                     ))}
                   </div>
                 </div>
-              )}
+              )} */}
             </Card>
 
             {/* Property Details */}
@@ -207,7 +151,7 @@ export default function PropertyDetailPage() {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-2xl mb-2">{property.name}</CardTitle>
+                    <CardTitle className="text-2xl mb-2">{property.propertyName}</CardTitle>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <MapPin className="h-4 w-4" />
                       <span>{property.address}</span>
@@ -222,7 +166,7 @@ export default function PropertyDetailPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="flex items-center gap-2">
                     <Bed className="h-5 w-5 text-muted-foreground" />
-                    <span className="font-medium">{property.bedrooms}</span>
+                    <span className="font-medium">{property.rooms}</span>
                     <span className="text-sm text-muted-foreground">dormitorios</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -237,7 +181,7 @@ export default function PropertyDetailPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-5 w-5 text-muted-foreground" />
-                    <span className="font-medium">{property.yearBuilt}</span>
+                    <span className="font-medium">{property.yearConstruction ?? "—"}</span>
                     <span className="text-sm text-muted-foreground">año</span>
                   </div>
                 </div>
@@ -246,7 +190,7 @@ export default function PropertyDetailPage() {
 
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Descripción</h3>
-                  <p className="text-muted-foreground leading-relaxed">{property.description}</p>
+                  <p className="text-muted-foreground leading-relaxed">{property.description || "Sin descripción."}</p>
                 </div>
               </CardContent>
             </Card>
@@ -258,7 +202,7 @@ export default function PropertyDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {property.features.map((feature, index) => (
+                  {(property.features || []).map((feature: string, index: number) => (
                     <div key={index} className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-primary rounded-full" />
                       <span className="text-sm">{feature}</span>
@@ -282,13 +226,13 @@ export default function PropertyDetailPage() {
                   </div>
                   <div className="text-center p-4 bg-muted rounded-lg">
                     <Home className="h-6 w-6 text-primary mx-auto mb-2" />
-                    <div className="font-semibold">{formatPrice(property.propertyTax)}</div>
-                    <div className="text-sm text-muted-foreground">Contribuciones anuales</div>
+                    <div className="font-semibold">{formatPrice(property.annualTax ?? 0)}</div>
+                    <div className="text-sm text-muted-foreground">Impuesto anual</div>
                   </div>
                   <div className="text-center p-4 bg-muted rounded-lg">
                     <Calendar className="h-6 w-6 text-primary mx-auto mb-2" />
-                    <div className="font-semibold">{formatPrice(property.maintenanceFee)}</div>
-                    <div className="text-sm text-muted-foreground">Gastos comunes</div>
+                    <div className="font-semibold">{formatPrice(property.monthlyExpenses ?? 0)}</div>
+                    <div className="text-sm text-muted-foreground">Gastos mensuales</div>
                   </div>
                 </div>
               </CardContent>
@@ -304,29 +248,32 @@ export default function PropertyDetailPage() {
               <CardContent>
                 <div className="text-center mb-6">
                   <Avatar className="w-20 h-20 mx-auto mb-4">
-                    <AvatarImage src={property.owner.avatar || "/placeholder.svg"} alt={property.owner.name} />
-                    <AvatarFallback className="text-lg">{getInitials(property.owner.name)}</AvatarFallback>
+                    <AvatarImage 
+                      src={owner?.photo ? 
+                        (owner.photo.startsWith('data:image/') ? 
+                          owner.photo : 
+                          `data:image/jpeg;base64,${owner.photo}`) : 
+                        "/placeholder.svg"} 
+                      alt={owner?.ownerName} 
+                    />
+                    <AvatarFallback className="text-lg">{getInitials(owner?.ownerName || "")}</AvatarFallback>
                   </Avatar>
-                  <h3 className="font-semibold text-lg">{property.owner.name}</h3>
+                  <h3 className="font-semibold text-lg">{owner?.ownerName}</h3>
                   <p className="text-sm text-muted-foreground">Propietario</p>
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
                     <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{property.owner.phone}</span>
+                    <span className="text-sm">{owner?.phone}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{property.owner.email}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{property.owner.yearsExperience} años de experiencia</span>
+                    <span className="text-sm">{owner?.email}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Home className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{property.owner.propertiesSold} propiedades vendidas</span>
+                    <span className="text-sm">{owner?.birthday ?? "—"} Cumpleaños</span>
                   </div>
                 </div>
 
