@@ -21,30 +21,30 @@ namespace WebAPI.Controllers
         [HttpGet("GetOnePropertyByID")]
         public async Task<ActionResult<PropertyDTO>> Get([FromBody] GeneralIdDTO generalIdDTO)
         {
-            var book = await _propertyService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
+            var property = await _propertyService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
 
-            if (book is null)
+            if (property is null)
             {
                 return NotFound();
             }
 
-            return book;
+            return property;
         }
 
         [HttpPost("CreateProperty")]
         public async Task<IActionResult> Create([FromBody] PropertyDTO propertyDTO)
         {
-            await _propertyService.CreateAsync(propertyDTO);
+            PropertyDTO newProperty =  await _propertyService.CreateAsync(propertyDTO);
 
-            return CreatedAtAction(nameof(Get), propertyDTO);
+            return CreatedAtAction(nameof(Get), newProperty);
         }
 
         [HttpPut("UpdateProperty")]
         public async Task<IActionResult> Update([FromBody] PropertyDTO propertyDTO)
         {
-            var owner = await _propertyService.GetOneByIdAsync(propertyDTO.IdProperty!);
+            var property = await _propertyService.GetOneByIdAsync(propertyDTO.IdProperty!);
 
-            if (owner is null)
+            if (property is null)
             {
                 return NotFound();
             }
@@ -57,9 +57,9 @@ namespace WebAPI.Controllers
         [HttpDelete("DeleteProperty")]
         public async Task<IActionResult> Delete([FromBody] GeneralIdDTO generalIdDTO)
         {
-            var book = await _propertyService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
+            var property = await _propertyService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
 
-            if (book is null)
+            if (property is null)
             {
                 return NotFound();
             }
