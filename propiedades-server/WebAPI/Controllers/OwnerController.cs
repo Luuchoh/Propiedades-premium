@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.DTOs.Request;
 using Application.Interfaces;
 using Domain.Models;
 using Infraestructure.Persistence.Services;
@@ -19,23 +20,36 @@ public class OwnerController : ControllerBase
     public async Task<List<Owner>> Get() =>
         await _ownerService.GetAllAsync();
 
-    [HttpGet("GetOneOwnerById")]
-    public async Task<ActionResult<Owner>> Get(GeneralIdDTO generalIdDTO)
+    [HttpPost("GetOneOwnerById")]
+    public async Task<ActionResult<Owner>> Get([FromBody] GeneralIdDTO generalIdDTO)
     {
-        var book = await _ownerService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
+        var owner = await _ownerService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
 
-        if (book is null)
+        if (owner is null)
         {
             return NotFound();
         }
 
-        return book;
+        return owner;
+    }
+
+    [HttpPost("GetOneOwnerByDNI")]
+    public async Task<ActionResult<Owner>> GetByDNI([FromBody] GetByDNIRequest request)
+    {
+        var owner = await _ownerService.GetOneByDNIAsync(request.DNI);
+
+        if (owner is null)
+        {
+            return NotFound();
+        }
+
+        return owner;
     }
 
     [HttpPost("CreateOwner")]
     public async Task<IActionResult> Create([FromBody] OwnerDTO ownerDTO)
     {
-        await _ownerService.CreateAsync(ownerDTO);
+        Owner newOwner= await _ownerService.CreateAsync(ownerDTO);
 
         return CreatedAtAction(nameof(Get), ownerDTO);
     }
