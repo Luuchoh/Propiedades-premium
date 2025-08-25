@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState, type ChangeEvent } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,82 +19,54 @@ import {
   DollarSign,
   Building,
   Users,
+  Image,
 } from "lucide-react"
 import Link from "next/link"
+import { useAppStore, AppState, Property, Owner } from "@/store/useAppStore"
 
-// Mock data - En producción esto vendría de tu API REST
-const mockProperties = [
-  {
-    id: 1,
-    name: "Casa Moderna en Las Condes",
-    address: "Av. Las Condes 1234, Las Condes, Santiago",
-    price: 450000000,
-    type: "Casa",
-    status: "Disponible",
-    createdAt: "2024-01-15",
-    owner: "María González",
-  },
-  {
-    id: 2,
-    name: "Departamento Vista al Mar",
-    address: "Av. del Mar 567, Viña del Mar",
-    price: 280000000,
-    type: "Departamento",
-    status: "Vendido",
-    createdAt: "2024-01-10",
-    owner: "Carlos Rodríguez",
-  },
-  {
-    id: 3,
-    name: "Casa Familiar en Providencia",
-    address: "Calle Los Aromos 890, Providencia, Santiago",
-    price: 380000000,
-    type: "Casa",
-    status: "Disponible",
-    createdAt: "2024-01-08",
-    owner: "Ana Martínez",
-  },
-  {
-    id: 4,
-    name: "Penthouse Centro Histórico",
-    address: "Plaza de Armas 123, Santiago Centro",
-    price: 650000000,
-    type: "Penthouse",
-    status: "Reservado",
-    createdAt: "2024-01-05",
-    owner: "Roberto Silva",
-  },
-  {
-    id: 5,
-    name: "Casa con Piscina en La Reina",
-    address: "Av. Príncipe de Gales 456, La Reina, Santiago",
-    price: 520000000,
-    type: "Casa",
-    status: "Disponible",
-    createdAt: "2024-01-03",
-    owner: "Patricia López",
-  },
-  {
-    id: 6,
-    name: "Loft Industrial Ñuñoa",
-    address: "Av. Grecia 789, Ñuñoa, Santiago",
-    price: 195000000,
-    type: "Loft",
-    status: "Disponible",
-    createdAt: "2024-01-01",
-    owner: "Diego Morales",
-  },
-]
+// Datos desde el store (API simulada)
 
 export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState("")
+  const [owners, setOwners] = useState<Record<string, Owner>>({})
+  const properties = useAppStore((s: AppState) => s.properties)
+  const fetchProperties = useAppStore((s: AppState) => s.fetchProperties)
+  const fetchOwnerById = useAppStore((s: AppState) => s.fetchOwnerById)
 
-  const filteredProperties = mockProperties.filter(
-    (property) =>
-      property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  // Fetch properties and their owners
+  useEffect(() => {
+    const loadData = async () => {
+      if (!properties.length) {
+        await fetchProperties()
+      }
+      
+      // Fetch owners for all properties
+      const ownerPromises = properties.map(async (property) => {
+        if (property.idOwner && !owners[property.idOwner]) {
+          const owner = await fetchOwnerById(property.idOwner)
+          if (owner) {
+            setOwners(prev => ({
+              ...prev,
+              [property.idOwner]: owner
+            }))
+          }
+        }
+      })
+      
+      await Promise.all(ownerPromises)
+    }
+    
+    loadData()
+  }, [properties.length, fetchOwnerById, fetchProperties, owners, setOwners])
+
+  const filteredProperties = properties.filter((property: Property) => {
+    const ownerName = owners[property.idOwner]?.ownerName?.toLowerCase() || ''
+    return (
+      property.propertyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.owner.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      ownerName.includes(searchTerm.toLowerCase())
+    )
+  })
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("es-CL", {
@@ -104,7 +76,7 @@ export default function DashboardPage() {
     }).format(price)
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: Property["status"]) => {
     switch (status) {
       case "Disponible":
         return "bg-green-100 text-green-800 border-green-200"
@@ -118,10 +90,10 @@ export default function DashboardPage() {
   }
 
   // Calcular estadísticas
-  const totalProperties = mockProperties.length
-  const availableProperties = mockProperties.filter((p) => p.status === "Disponible").length
-  const soldProperties = mockProperties.filter((p) => p.status === "Vendido").length
-  const totalValue = mockProperties.reduce((sum, p) => sum + p.price, 0)
+  const totalProperties = properties.length
+  const availableProperties = properties.filter((p: Property) => p.status === "Disponible").length
+  const soldProperties = properties.filter((p: Property) => p.status === "Vendido").length
+  const totalValue = properties.reduce((sum: number, p: Property) => sum + p.price, 0)
   const averagePrice = totalValue / totalProperties
 
   return (
@@ -216,7 +188,7 @@ export default function DashboardPage() {
                   <Input
                     placeholder="Buscar propiedades..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
                     className="pl-10 w-64"
                   />
                 </div>
@@ -228,6 +200,7 @@ export default function DashboardPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead></TableHead>
                     <TableHead>Propiedad</TableHead>
                     <TableHead>Propietario</TableHead>
                     <TableHead>Precio</TableHead>
@@ -237,22 +210,31 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredProperties.map((property) => (
-                    <TableRow key={property.id}>
+                  {filteredProperties.map((property: Property) => (
+                    <TableRow key={property.idProperty}>
+                      <TableCell>
+                        <div className="relative w-25 h-12 rounded-lg overflow-hidden">
+                          <img
+                            src={property.image?.file || "/placeholder.svg"}
+                            alt={property.propertyName}
+                            className="object-cover w-full h-full"
+                          />
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{property.name}</div>
+                          <div className="font-medium">{property.propertyName}</div>
                           <div className="text-sm text-muted-foreground line-clamp-1">{property.address}</div>
                         </div>
                       </TableCell>
-                      <TableCell>{property.owner}</TableCell>
+                      <TableCell>{owners[property.idOwner]?.ownerName || 'Propietario no disponible'}</TableCell>
                       <TableCell className="font-medium">{formatPrice(property.price)}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={getStatusColor(property.status)}>
                           {property.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>{new Date(property.createdAt).toLocaleDateString("es-CL")}</TableCell>
+                      <TableCell>{new Date(property.createdAt || new Date().toISOString()).toLocaleDateString("es-CL")}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -262,13 +244,13 @@ export default function DashboardPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link href={`/property/${property.id}`}>
+                              <Link href={`/property/${property.idProperty}`}>
                                 <Eye className="h-4 w-4 mr-2" />
                                 Ver detalles
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                              <Link href={`/dashboard/edit/${property.id}`}>
+                              <Link href={`/dashboard/edit/${property.idProperty}`}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Editar
                               </Link>
