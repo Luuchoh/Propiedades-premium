@@ -7,18 +7,25 @@ public class Owner
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
+    [BsonElement("_Id")]
     public string? IdOwner { get; set; }
 
     [BsonElement("Name")]
-    public string OwnerName { get; set; } = null!;
+    public string? OwnerName { get; set; }
 
-    public string Phone { get; set; } = null!;
+    public string? DNI { get; set; }
 
-    public string Email { get; set; } = null!;
+    public string? Phone { get; set; }
 
-    public string Address { get; set; } = null!; 
+    public string? Email { get; set; }
 
-    public string Photo { get; set; } = null!;
+    public string? Address { get; set; } 
 
-    public string Birthday { get; set; } = null!;
+    public string? Photo { get; set; }
+
+    public string? Birthday { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
 }
