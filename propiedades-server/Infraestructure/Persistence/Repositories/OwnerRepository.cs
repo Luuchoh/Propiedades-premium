@@ -6,11 +6,11 @@ using MongoDB.Driver;
 
 namespace Infraestructure.Persistence.Services
 {
-    public class OwnerService : IOwner
+    public class OwnerRepository : IOwner
     {
         private readonly IMongoCollection<Owner> _ownerCollection;
 
-        public OwnerService(
+        public OwnerRepository(
             IOptions<PropertyPremiumDatabaseSettings> PropertyPremiumDatabaseSettings)
         {
             var mongoClient = new MongoClient(

@@ -6,11 +6,11 @@ using MongoDB.Driver;
 
 namespace Infraestructure.Persistence.Services
 {
-    public class PropertyImageService : IPropertyImage
+    public class PropertyImageRespository : IPropertyImage
     {
         private readonly IMongoCollection<PropertyImage> _images;
 
-        public PropertyImageService(
+        public PropertyImageRespository(
             IOptions<PropertyPremiumDatabaseSettings> PropertyPremiumDatabaseSettings)
         {
             var mongoClient = new MongoClient(
