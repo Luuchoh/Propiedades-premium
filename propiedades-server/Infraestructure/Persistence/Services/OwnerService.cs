@@ -57,6 +57,8 @@ namespace Infraestructure.Persistence.Services
 
             await _ownerCollection.InsertOneAsync(newOwner);
 
+            newOwner.IdOwner = newOwner.IdOwner;
+
             return newOwner;
         }
 
