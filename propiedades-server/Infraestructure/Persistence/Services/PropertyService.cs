@@ -111,10 +111,10 @@ namespace Infraestructure.Persistence.Services
 
             PropertyImage newPropertyImage = await _PropertyimageService.CreateAsync(newPropertyImageDTO);
 
-            return MapToPropertyDTO(newProperty, newPropertyImage); ;
+            return MapToPropertyDTO(newProperty, newPropertyImage);
         }
 
-        public async Task UpdateAsync(PropertyDTO PropertyDTO)
+        public async Task<PropertyDTO> UpdateAsync(PropertyDTO PropertyDTO)
         {
             var updateProperty = Builders<Property>.Update
                 .Set(p => p.IdOwner, PropertyDTO.IdOwner)
@@ -145,6 +145,8 @@ namespace Infraestructure.Persistence.Services
             };
 
             await _PropertyimageService.UpdateAsync(updatePropertyImage);
+
+            return PropertyDTO;
         }
 
         public async Task RemoveAsync(string generalId) =>

@@ -49,9 +49,10 @@ namespace WebAPI.Controllers
                 return NotFound();
             }
 
-            await _propertyService.UpdateAsync(propertyDTO);
+            var propertyUpdeted = await _propertyService.UpdateAsync(propertyDTO);
 
-            return NoContent();
+            return Ok(propertyUpdeted);
+
         }
 
         [HttpDelete("DeleteProperty")]

@@ -11,7 +11,7 @@ namespace Application.Interfaces
 
         Task<PropertyDTO> CreateAsync(PropertyDTO PropertyDTO);
 
-        Task UpdateAsync(PropertyDTO PropertyDTO);
+        Task<PropertyDTO> UpdateAsync(PropertyDTO PropertyDTO);
 
         Task RemoveAsync(string generalId);
     }
