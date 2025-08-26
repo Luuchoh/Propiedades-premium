@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using Domain.Models;
 using Microsoft.Extensions.Options;
@@ -21,6 +21,12 @@ namespace Infraestructure.Persistence.Services
 
             _ownerCollection = mongoDatabase.GetCollection<Owner>(
                 PropertyPremiumDatabaseSettings.Value.OwnerCollectionName);
+        }
+
+        // Overload constructor to allow injecting a collection for unit testing
+        public OwnerRepository(IMongoCollection<Owner> ownerCollection)
+        {
+            _ownerCollection = ownerCollection;
         }
 
         public async Task<List<Owner>> GetAllAsync() =>
@@ -52,7 +58,7 @@ namespace Infraestructure.Persistence.Services
                 Address = ownerDTO.Address,
                 Photo = ownerDTO.Photo,
                 Birthday = ownerDTO.Birthday,
-                CreatedAt = DateTime.Now,
+                CreatedAt = ownerDTO.CreatedAt ?? DateTime.Now,
             };
 
             await _ownerCollection.InsertOneAsync(newOwner);
@@ -66,7 +72,7 @@ namespace Infraestructure.Persistence.Services
         {
             var updateOwner = Builders<Owner>.Update
                 .Set(p => p.OwnerName, ownerDTO.OwnerName)
-                .Set(p => p.DNI, ownerDTO.OwnerName)
+                .Set(p => p.DNI, ownerDTO.DNI)
                 .Set(p => p.Phone, ownerDTO.Phone)
                 .Set(p => p.Email, ownerDTO.Email)
                 .Set(p => p.Address, ownerDTO.Address)
