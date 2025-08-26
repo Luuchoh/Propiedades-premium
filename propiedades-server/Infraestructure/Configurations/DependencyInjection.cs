@@ -32,9 +32,9 @@ public static class DependencyInjection
     /// </summary>
     private static void RegisterDomainServices(IServiceCollection services)
     {
-        services.AddScoped<IOwner, OwnerService>();
-        services.AddScoped<IProperty, PropertyService>();
-        services.AddScoped<IPropertyImage, PropertyImageService>();
+        services.AddScoped<IOwner, OwnerRepository>();
+        services.AddScoped<IProperty, PropertyRepository>();
+        services.AddScoped<IPropertyImage, PropertyImageRespository>();
     }
 
     /// <summary>
