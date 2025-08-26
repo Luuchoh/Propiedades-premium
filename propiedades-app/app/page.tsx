@@ -1,168 +1,215 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import type { Property, PropertyFilters } from "@/lib/types"
-import { mockProperties } from "@/lib/mock-data"
-import { PropertyCard } from "@/components/property-card"
-import { PropertyFilters as PropertyFiltersComponent } from "@/components/property-filters"
-import { UserMenu } from "@/components/auth/user-menu"
+import { useState, useEffect, useMemo } from "react"
+import { useAppStore } from "@/store/useAppStore"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Home, Settings } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Search, MapPin, DollarSign, Home, Filter, Loader2 } from "lucide-react"
 import Link from "next/link"
 
-export default function HomePage() {
-  const [properties, setProperties] = useState<Property[]>(mockProperties)
-  const [filteredProperties, setFilteredProperties] = useState<Property[]>(mockProperties)
-  const [filters, setFilters] = useState<PropertyFilters>({})
-  const [searchQuery, setSearchQuery] = useState("")
+import { Property } from "@/store/useAppStore"
+import { formatPrice } from "@/lib/utils"
 
-  // Filter properties based on filters and search query
+export default function PropertiesPage() {
+  const { properties, loading, error, fetchProperties } = useAppStore()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [addressFilter, setAddressFilter] = useState("")
+  const [minPrice, setMinPrice] = useState("")
+  const [maxPrice, setMaxPrice] = useState("")
+  const [showFilters, setShowFilters] = useState(false)
+
   useEffect(() => {
-    let filtered = properties
+    fetchProperties()
+  }, [fetchProperties])
 
-    // Apply filters
-    if (filters.priceMin) {
-      filtered = filtered.filter((p) => p.price >= filters.priceMin!)
-    }
-    if (filters.priceMax) {
-      filtered = filtered.filter((p) => p.price <= filters.priceMax!)
-    }
-    if (filters.bedrooms) {
-      filtered = filtered.filter((p) => p.details.bedrooms >= filters.bedrooms!)
-    }
-    if (filters.bathrooms) {
-      filtered = filtered.filter((p) => p.details.bathrooms >= filters.bathrooms!)
-    }
-    if (filters.propertyType) {
-      filtered = filtered.filter((p) => p.details.propertyType === filters.propertyType)
-    }
-    if (filters.city) {
-      filtered = filtered.filter((p) => p.location.city.toLowerCase().includes(filters.city!.toLowerCase()))
-    }
-    if (filters.status) {
-      filtered = filtered.filter((p) => p.details.status === filters.status)
-    }
+  const filteredProperties = useMemo(() => {
+    return properties.filter((property) => {
+      const matchesName = property.propertyName.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesAddress = property.address.toLowerCase().includes(addressFilter.toLowerCase())
+      const min = minPrice ? parseInt(minPrice) : 0
+      const max = maxPrice ? parseInt(maxPrice) : Infinity
+      const matchesPrice = property.price >= min && property.price <= max
 
-    // Apply search query
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (p) =>
-          p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.location.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.location.city.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-    }
+      return matchesName && matchesAddress && matchesPrice
+    })
+  }, [properties, searchTerm, addressFilter, minPrice, maxPrice])
 
-    setFilteredProperties(filtered)
-  }, [properties, filters, searchQuery])
-
-  const handleFiltersChange = (newFilters: PropertyFilters) => {
-    setFilters(newFilters)
-  }
-
-  const handleClearFilters = () => {
-    setFilters({})
-    setSearchQuery("")
-  }
+  
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
+      <header className="bg-card border-b border-border">
+        <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-3">
               <Home className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-primary">Propiedades Premium</h1>
+              <h1 className="text-2xl font-bold text-card-foreground">PropiedadesPremium</h1>
             </div>
-            <nav className="flex items-center space-x-4">
-              <Link href="/dashboard">
-                <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Dashboard
-                </Button>
-              </Link>
-              <UserMenu />
-            </nav>
+            <Link href="/dashboard">
+              <Button variant="outline" className="gap-2 bg-transparent">
+                <DollarSign className="h-4 w-4" />
+                Dashboard
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary/10 to-accent/10 py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Encuentra tu Hogar Ideal</h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Descubre las mejores propiedades en venta con la atención personalizada que mereces
-          </p>
-
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-              <Input
-                placeholder="Buscar por título, descripción o ubicación..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-3 text-lg"
-              />
-            </div>
+      <div className="container mx-auto px-4 py-8">
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2">Cargando propiedades...</span>
           </div>
-        </div>
-      </section>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {/* Filters */}
-        <div className="mb-8">
-          <PropertyFiltersComponent
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            onClearFilters={handleClearFilters}
-          />
-        </div>
-
-        {/* Results Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-2xl font-semibold">
-            Propiedades Disponibles
-            <span className="text-muted-foreground text-lg ml-2">
-              ({filteredProperties.length} {filteredProperties.length === 1 ? "resultado" : "resultados"})
-            </span>
-          </h3>
-        </div>
-
-        {/* Properties Grid */}
-        {filteredProperties.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProperties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">🏠</div>
-            <h3 className="text-xl font-semibold mb-2">No se encontraron propiedades</h3>
-            <p className="text-muted-foreground mb-4">
-              Intenta ajustar tus filtros de búsqueda para encontrar más resultados
-            </p>
-            <Button onClick={handleClearFilters} variant="outline">
-              Limpiar Filtros
+        ) : error ? (
+          <div className="text-center py-8">
+            <p className="text-red-500">{error}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Reintentar
             </Button>
           </div>
-        )}
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-card border-t mt-16">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center text-muted-foreground">
-            <p>&copy; 2024 Propiedades Premium. Todos los derechos reservados.</p>
+        ) : (
+          <>
+            {/* Search and Filters */}
+            <div className="mb-8 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Buscar por nombre de propiedad..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="gap-2">
+              <Filter className="h-4 w-4" />
+              Filtros
+            </Button>
           </div>
+
+          {showFilters && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Filtros de Búsqueda</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="address">Dirección</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Input
+                        id="address"
+                        placeholder="Filtrar por dirección..."
+                        value={addressFilter}
+                        onChange={(e) => setAddressFilter(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="minPrice">Precio Mínimo (CLP)</Label>
+                    <Input
+                      id="minPrice"
+                      type="number"
+                      placeholder="Ej: 200000000"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="maxPrice">Precio Máximo (CLP)</Label>
+                    <Input
+                      id="maxPrice"
+                      type="number"
+                      placeholder="Ej: 500000000"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
-      </footer>
+
+        {/* Results Count */}
+        <div className="mb-6">
+          <p className="text-muted-foreground">
+            Mostrando {filteredProperties.length} de {properties.length} propiedades
+          </p>
+        </div>
+
+            {/* Properties Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProperties.length > 0 ? (
+                filteredProperties.map((property) => (
+                  <Card key={`${property.idProperty}`} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="aspect-video relative overflow-hidden">
+                      <img
+                        src={property.image?.file || "/placeholder.svg"}
+                        alt={property.propertyName}
+                        className="w-full h-full object-cover"
+                      />
+                      <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground">{property.propertyType}</Badge>
+                    </div>
+
+                    <CardHeader>
+                      <h3 className="font-semibold text-lg">{property.propertyName}</h3>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-4 w-4" />
+                        {property.address}
+                      </p>
+                      <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="font-medium">{property.rooms}</p>
+                          <p className="text-muted-foreground">Habitaciones</p>
+                        </div>
+                        <div>
+                          <p className="font-medium">{property.bathrooms}</p>
+                          <p className="text-muted-foreground">Baños</p>
+                        </div>
+                        <div>
+                          <p className="font-medium">{property.area} m²</p>
+                          <p className="text-muted-foreground">Área</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="text-2xl font-bold text-primary">{formatPrice(property.price)}</div>
+                      </div>
+                    </CardContent>
+
+                    <CardFooter>
+                      <Link 
+                        href={`/property/${property.idProperty}`} 
+                        className="w-full"
+                        onClick={() => useAppStore.getState().setSelectedProperty(property)}
+                      >
+                        <Button className="w-full">Ver Detalles</Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-muted-foreground">No se encontraron propiedades que coincidan con los filtros.</p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+
     </div>
   )
 }
