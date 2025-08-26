@@ -1,6 +1,5 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
-using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers
@@ -9,19 +8,19 @@ namespace WebAPI.Controllers
     [Route("api/[controller]")]
     public class PropertyController : ControllerBase
     {
-        private readonly IProperty _propertyService;
+        private readonly IProperty _porpertyRepository;
 
         public PropertyController(IProperty propertyService) =>
-            _propertyService = propertyService;
+            _porpertyRepository = propertyService;
 
         [HttpGet("GetAllProperties")]
         public async Task<List<PropertyDTO>> Get() =>
-            await _propertyService.GetAllAsync();
+            await _porpertyRepository.GetAllAsync();
 
         [HttpGet("GetOnePropertyByID")]
         public async Task<ActionResult<PropertyDTO>> Get([FromBody] GeneralIdDTO generalIdDTO)
         {
-            var property = await _propertyService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
+            var property = await _porpertyRepository.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
 
             if (property is null)
             {
@@ -34,7 +33,7 @@ namespace WebAPI.Controllers
         [HttpPost("CreateProperty")]
         public async Task<IActionResult> Create([FromBody] PropertyDTO propertyDTO)
         {
-            PropertyDTO newProperty =  await _propertyService.CreateAsync(propertyDTO);
+            PropertyDTO newProperty =  await _porpertyRepository.CreateAsync(propertyDTO);
 
             return CreatedAtAction(nameof(Get), newProperty);
         }
@@ -42,14 +41,14 @@ namespace WebAPI.Controllers
         [HttpPut("UpdateProperty")]
         public async Task<IActionResult> Update([FromBody] PropertyDTO propertyDTO)
         {
-            var property = await _propertyService.GetOneByIdAsync(propertyDTO.IdProperty!);
+            var property = await _porpertyRepository.GetOneByIdAsync(propertyDTO.IdProperty!);
 
             if (property is null)
             {
                 return NotFound();
             }
 
-            var propertyUpdeted = await _propertyService.UpdateAsync(propertyDTO);
+            var propertyUpdeted = await _porpertyRepository.UpdateAsync(propertyDTO);
 
             return Ok(propertyUpdeted);
 
@@ -58,14 +57,14 @@ namespace WebAPI.Controllers
         [HttpDelete("DeleteProperty")]
         public async Task<IActionResult> Delete([FromBody] GeneralIdDTO generalIdDTO)
         {
-            var property = await _propertyService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
+            var property = await _porpertyRepository.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
 
             if (property is null)
             {
                 return NotFound();
             }
 
-            await _propertyService.RemoveAsync(generalIdDTO.MongoGeneralId);
+            await _porpertyRepository.RemoveAsync(generalIdDTO.MongoGeneralId);
 
             return NoContent();
         }

@@ -2,7 +2,6 @@
 using Application.DTOs.Request;
 using Application.Interfaces;
 using Domain.Models;
-using Infraestructure.Persistence.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers;
@@ -11,19 +10,19 @@ namespace WebAPI.Controllers;
 [Route("api/[controller]")]
 public class OwnerController : ControllerBase
 {
-    private readonly IOwner _ownerService;
+    private readonly IOwner _ownerRepository;
 
     public OwnerController(IOwner ownerService) =>
-        _ownerService = ownerService;
+        _ownerRepository = ownerService;
 
     [HttpGet("GetAllOwners")]
     public async Task<List<Owner>> Get() =>
-        await _ownerService.GetAllAsync();
+        await _ownerRepository.GetAllAsync();
 
     [HttpPost("GetOneOwnerById")]
     public async Task<ActionResult<Owner>> Get([FromBody] GeneralIdDTO generalIdDTO)
     {
-        var owner = await _ownerService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
+        var owner = await _ownerRepository.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
 
         if (owner is null)
         {
@@ -36,7 +35,7 @@ public class OwnerController : ControllerBase
     [HttpPost("GetOneOwnerByDNI")]
     public async Task<ActionResult<Owner>> GetByDNI([FromBody] GetByDNIRequest request)
     {
-        var owner = await _ownerService.GetOneByDNIAsync(request.DNI);
+        var owner = await _ownerRepository.GetOneByDNIAsync(request.DNI);
 
         if (owner is null)
         {
@@ -49,7 +48,7 @@ public class OwnerController : ControllerBase
     [HttpPost("CreateOwner")]
     public async Task<IActionResult> Create([FromBody] OwnerDTO ownerDTO)
     {
-        Owner newOwner= await _ownerService.CreateAsync(ownerDTO);
+        Owner newOwner= await _ownerRepository.CreateAsync(ownerDTO);
 
         return CreatedAtAction(nameof(Get), ownerDTO);
     }
@@ -57,14 +56,14 @@ public class OwnerController : ControllerBase
     [HttpPut("UpdateOwner")]
     public async Task<IActionResult> Update([FromBody] OwnerDTO ownerDTO)
     {
-        var owner = await _ownerService.GetOneByIdAsync(ownerDTO.IdOwner!);
+        var owner = await _ownerRepository.GetOneByIdAsync(ownerDTO.IdOwner!);
 
         if (owner is null)
         {
             return NotFound();
         }
 
-        await _ownerService.UpdateAsync(ownerDTO);
+        await _ownerRepository.UpdateAsync(ownerDTO);
 
         return NoContent();
     }
@@ -72,14 +71,14 @@ public class OwnerController : ControllerBase
     [HttpDelete("DeleteOwner")]
     public async Task<IActionResult> Delete(GeneralIdDTO generalIdDTO)
     {
-        var book = await _ownerService.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
+        var book = await _ownerRepository.GetOneByIdAsync(generalIdDTO.MongoGeneralId);
 
         if (book is null)
         {
             return NotFound();
         }
 
-        await _ownerService.RemoveAsync(generalIdDTO.MongoGeneralId);
+        await _ownerRepository.RemoveAsync(generalIdDTO.MongoGeneralId);
 
         return NoContent();
     }
